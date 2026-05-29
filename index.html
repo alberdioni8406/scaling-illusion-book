@@ -554,7 +554,7 @@ footer{
     <div class="step-label">STEP 1 — SEND EXACT AMOUNT TO THIS ADDRESS</div>
 
     <div class="address-box">
-      <span class="address-text" id="bch-address">YOUR_BCH_ADDRESS_HERE</span>
+      <span class="address-text" id="bch-address">bitcoincash:qz02xkcr6mdezq9f9p5x4rq7p6m2lzktevxsyc4gn5</span>
       <button class="copy-btn" onclick="copyAddress()">COPY</button>
     </div>
 
@@ -754,7 +754,7 @@ footer{
 <!-- ── Scripts ─────────────────────────────────────────────────── -->
 <script>
 // ── CONFIG — EDIT THESE ─────────────────────────────────
-const BCH_ADDRESS = "qz02xkcr6mdezq9f9p5x4rq7p6m2lzktevxsyc4gn5";  // ← paste your BCH address
+const BCH_ADDRESS = "bitcoincash:qz02xkcr6mdezq9f9p5x4rq7p6m2lzktevxsyc4gn5";  // ← paste your BCH address
 const PRICE_USD   = 1.99;
 const PDF_FILENAME = "lightning_vs_bch_book_v2.pdf";
 // ────────────────────────────────────────────────────────
@@ -765,7 +765,7 @@ const MIN_CONFIRMS = 0;
 // ── QR Code (pure JS — no external lib) ─────────────────
 // Simple QR generation via goqr.me API rendered onto canvas
 async function renderQR() {
-  const addr = BCH_ADDRESS;
+  const addr = bitcoincash:qz02xkcr6mdezq9f9p5x4rq7p6m2lzktevxsyc4gn5;
   const canvas = document.getElementById('qr-canvas');
   const ctx = canvas.getContext('2d');
 
@@ -851,15 +851,15 @@ async function checkPayment() {
 
   try {
     // Use Blockchair API (free, no key needed for basic lookups)
-    const url = `https://api.blockchair.com/bitcoin-cash/dashboards/address/${BCH_ADDRESS}?limit=5`;
+    const url = `https://api.blockchair.com/bitcoin-cash/dashboards/address/${qz02xkcr6mdezq9f9p5x4rq7p6m2lzktevxsyc4gn5}?limit=5`;
     const r = await fetch(url);
     const data = await r.json();
 
-    if (!data || !data.data || !data.data[BCH_ADDRESS]) {
+    if (!data || !data.data || !data.data[qz02xkcr6mdezq9f9p5x4rq7p6m2lzktevxsyc4gn5]) {
       throw new Error('Could not read address data');
     }
 
-    const addrData = data.data[BCH_ADDRESS];
+    const addrData = data.data[qz02xkcr6mdezq9f9p5x4rq7p6m2lzktevxsyc4gn5];
     const txCount = addrData.address.transaction_count;
     const totalReceived = addrData.address.received; // in satoshis
     const transactions = addrData.transactions || [];
