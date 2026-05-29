@@ -546,7 +546,7 @@ footer{
   <div class="buy-card">
     <div class="price-row">
       <span class="price-currency">$</span>
-      <span class="price">1.99</span>
+      <span class="price">4.99</span>
       <span style="font-size:13px;color:var(--dim);margin-left:4px">USD equiv.</span>
     </div>
     <p class="price-desc">One-time payment · Instant delivery · No account needed</p>
@@ -554,7 +554,7 @@ footer{
     <div class="step-label">STEP 1 — SEND EXACT AMOUNT TO THIS ADDRESS</div>
 
     <div class="address-box">
-      <span class="address-text" id="bch-address">bitcoincash:qz02xkcr6mdezq9f9p5x4rq7p6m2lzktevxsyc4gn5</span>
+      <span class="address-text" id="bch-address">YOUR_BCH_ADDRESS_HERE</span>
       <button class="copy-btn" onclick="copyAddress()">COPY</button>
     </div>
 
@@ -754,70 +754,64 @@ footer{
 <!-- ── Scripts ─────────────────────────────────────────────────── -->
 <script>
 // ── CONFIG — EDIT THESE ─────────────────────────────────
-const BCH_ADDRESS = "bitcoincash:qz02xkcr6mdezq9f9p5x4rq7p6m2lzktevxsyc4gn5";  // ← paste your BCH address
-const PRICE_USD   = 1.99;
+const BCH_ADDRESS = "bitcoincash:qz02xkcr6mdezq9f9p5x4rq7p6m2lzktevxsyc4gn5";
+const BCH_ADDRESS_PLAIN = "qz02xkcr6mdezq9f9p5x4rq7p6m2lzktevxsyc4gn5"; // without prefix
+const PRICE_USD   = 4.99;
 const PDF_FILENAME = "lightning_vs_bch_book_v2.pdf";
 // ────────────────────────────────────────────────────────
 
-// Minimum confirmations to accept (0 = accept unconfirmed/mempool)
-const MIN_CONFIRMS = 0;
-
-// ── QR Code (pure JS — no external lib) ─────────────────
-// Simple QR generation via goqr.me API rendered onto canvas
+// ── QR Code ──────────────────────────────────────────────
 async function renderQR() {
-  const addr = BCH_ADDRESS;
   const canvas = document.getElementById('qr-canvas');
   const ctx = canvas.getContext('2d');
-
-  // Use the bitcoincash: URI scheme
-  const uri = encodeURIComponent(`bitcoincash:${addr}?amount=${getBCHAmount()}`);
+  const uri = encodeURIComponent(`${BCH_ADDRESS}?amount=${getBCHAmount()}`);
   const img = new Image();
   img.crossOrigin = "anonymous";
-  img.onload = () => {
-    ctx.clearRect(0,0,180,180);
-    ctx.drawImage(img,0,0,180,180);
-  };
+  img.onload = () => { ctx.clearRect(0,0,180,180); ctx.drawImage(img,0,0,180,180); };
   img.onerror = () => {
-    // Fallback: just draw the address text
-    ctx.fillStyle = '#fff';
-    ctx.fillRect(0,0,180,180);
-    ctx.fillStyle = '#000';
-    ctx.font = '9px monospace';
-    ctx.fillText('Scan in BCH wallet', 10, 20);
-    wrapText(ctx, addr, 10, 40, 160, 14);
+    ctx.fillStyle = '#fff'; ctx.fillRect(0,0,180,180);
+    ctx.fillStyle = '#333'; ctx.font = '9px monospace';
+    ctx.fillText('BCH Address QR', 20, 90);
   };
   img.src = `https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${uri}`;
 }
 
 function wrapText(ctx, text, x, y, maxW, lineH) {
-  const words = text.split('');
   let line = '';
-  for (let ch of words) {
+  for (let ch of text.split('')) {
     const test = line + ch;
-    if (ctx.measureText(test).width > maxW && line) {
-      ctx.fillText(line, x, y); y += lineH; line = ch;
-    } else { line = test; }
+    if (ctx.measureText(test).width > maxW && line) { ctx.fillText(line,x,y); y+=lineH; line=ch; }
+    else { line=test; }
   }
   ctx.fillText(line, x, y);
 }
 
 // ── BCH price fetch ──────────────────────────────────────
 let bchAmount = null;
-
 function getBCHAmount() { return bchAmount || 0.01; }
 
 async function fetchBCHPrice() {
   try {
-    // Use CoinGecko free API
-    const r = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin-cash&vs_currencies=usd');
-    const d = await r.json();
-    const price = d['bitcoin-cash']['usd'];
+    // Try CoinGecko first, fallback to CryptoCompare
+    let price = null;
+    try {
+      const r = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin-cash&vs_currencies=usd');
+      const d = await r.json();
+      price = d['bitcoin-cash']['usd'];
+    } catch(e) {
+      const r2 = await fetch('https://min-api.cryptocompare.com/data/price?fsym=BCH&tsyms=USD');
+      const d2 = await r2.json();
+      price = d2['USD'];
+    }
     bchAmount = (PRICE_USD / price).toFixed(6);
     document.getElementById('bch-amount').textContent = `~${bchAmount} BCH`;
+    // Also update the inline amount note
+    const noteEl = document.getElementById('amount-usd-note');
+    if (noteEl) noteEl.textContent = `≈ $${PRICE_USD} USD at current rate`;
     renderQR();
   } catch(e) {
-    document.getElementById('bch-amount').textContent = '~0.005 BCH (check wallet for exact amount)';
-    bchAmount = 0.005;
+    bchAmount = "0.01";
+    document.getElementById('bch-amount').textContent = '~0.01 BCH (approx. $4.99 USD)';
     renderQR();
   }
 }
@@ -835,7 +829,8 @@ function copyAddress() {
   });
 }
 
-// ── Payment check ────────────────────────────────────────
+// ── Payment check ─────────────────────────────────────────
+// Uses fulcrum.cash REST API — proper CORS support for browser use
 let checkAttempts = 0;
 
 async function checkPayment() {
@@ -845,89 +840,129 @@ async function checkPayment() {
 
   btn.disabled = true;
   btn.textContent = 'Checking...';
-
   statusArea.className = 'status-area checking';
   statusText.textContent = 'Querying the Bitcoin Cash blockchain...';
 
-  try {
-    // Use Blockchair API (free, no key needed for basic lookups)
-    const url = `https://api.blockchair.com/bitcoin-cash/dashboards/address/${BCH_ADDRESS}?limit=5`;
-    const r = await fetch(url);
-    const data = await r.json();
+  // Try multiple public CORS-enabled BCH APIs in order
+  const apis = [
+    () => checkViaBlockchair(),
+    () => checkViaBchApi(),
+  ];
 
-    if (!data || !data.data || !data.data[BCH_ADDRESS]) {
-      throw new Error('Could not read address data');
-    }
+  let found = false;
+  let lastError = '';
 
-    const addrData = data.data[BCH_ADDRESS];
-    const txCount = addrData.address.transaction_count;
-    const totalReceived = addrData.address.received; // in satoshis
-    const transactions = addrData.transactions || [];
-
-    // Check if there's any recent transaction
-    // In production you'd check the exact amount against recent TXs
-    // Here we check if received > 0 as a demo flow
-    // For real use: compare bchAmount against recent unconfirmed/confirmed TX
-
-    // Try to find a recent incoming TX matching approximate amount
-    let paymentFound = false;
-    let txHash = null;
-
-    if (transactions.length > 0) {
-      // Get recent TX details
-      const recentTx = transactions[0];
-      const txUrl = `https://api.blockchair.com/bitcoin-cash/dashboards/transaction/${recentTx}`;
-      const txR = await fetch(txUrl);
-      const txData = await txR.json();
-
-      if (txData && txData.data && txData.data[recentTx]) {
-        const tx = txData.data[recentTx];
-        const outputs = tx.outputs || [];
-
-        // Check if any output goes to our address with roughly the right amount
-        const expectedSats = Math.round(getBCHAmount() * 1e8);
-        const tolerance = expectedSats * 0.05; // 5% tolerance
-
-        for (const out of outputs) {
-          if (out.recipient === BCH_ADDRESS) {
-            const diff = Math.abs(out.value - expectedSats);
-            if (diff <= tolerance || getBCHAmount() <= 0.001) {
-              paymentFound = true;
-              txHash = recentTx;
-              break;
-            }
-          }
-        }
-      }
-    }
-
-} catch (err) {
-  console.error(err);
-  throw new Error('Could not read address data');
-}
-
-    if (paymentFound) {
-      statusArea.className = 'status-area success';
-      statusText.textContent = `✅ Payment confirmed! TX: ${txHash ? txHash.slice(0,16)+'...' : 'found'}`;
-      revealDownload();
-    } else {
-      checkAttempts++;
-      statusArea.className = 'status-area error';
-      if (checkAttempts < 3) {
-        statusText.textContent = `Payment not found yet. Please wait 1–2 minutes after sending, then try again. (Attempt ${checkAttempts}/3)`;
+  for (const apiFn of apis) {
+    try {
+      const result = await apiFn();
+      if (result.found) {
+        statusArea.className = 'status-area success';
+        statusText.textContent = `✅ Payment confirmed! TX: ${result.txid ? result.txid.slice(0,20)+'...' : 'verified'}`;
+        revealDownload();
+        found = true;
+        break;
       } else {
-        statusText.textContent = `Still not found. BCH usually confirms in seconds — check your wallet that the TX was sent to the correct address. Try again or contact support.`;
+        lastError = result.message || 'Payment not found yet.';
+        break; // API worked but no payment — no need to try next
       }
-      btn.disabled = false;
-      btn.textContent = '⚡ I Paid — Check & Download';
+    } catch(e) {
+      lastError = e.message;
+      // try next API
     }
+  }
 
-  } catch(err) {
+  if (!found) {
+    checkAttempts++;
     statusArea.className = 'status-area error';
-    statusText.textContent = `Network error: ${err.message}. Check your internet connection and try again.`;
+    statusText.textContent = checkAttempts < 4
+      ? `${lastError} Please wait 30–60 seconds after sending and try again. (Attempt ${checkAttempts})`
+      : `Payment still not detected. Double-check you sent to the correct address, then try once more.`;
     btn.disabled = false;
     btn.textContent = '⚡ I Paid — Check & Download';
   }
+}
+
+// ── API method 1: Blockchair (strip prefix for their API) ─
+async function checkViaBlockchair() {
+  // Blockchair needs the plain address without bitcoincash: prefix
+  const plain = BCH_ADDRESS_PLAIN;
+  const url = `https://api.blockchair.com/bitcoin-cash/dashboards/address/${plain}`;
+  const r = await fetch(url, { headers: { 'Accept': 'application/json' } });
+  if (!r.ok) throw new Error(`Blockchair HTTP ${r.status}`);
+  const data = await r.json();
+
+  if (!data?.data?.[plain]) throw new Error('Blockchair: unexpected response format');
+
+  const addrInfo = data.data[plain].address;
+  const txList   = data.data[plain].transactions || [];
+
+  if (txList.length === 0) return { found: false, message: 'No transactions found on this address yet.' };
+
+  // Check the most recent TX
+  const recentTxId = txList[0];
+  const txUrl = `https://api.blockchair.com/bitcoin-cash/dashboards/transaction/${recentTxId}`;
+  const txR = await fetch(txUrl, { headers: { 'Accept': 'application/json' } });
+  if (!txR.ok) throw new Error(`Blockchair TX HTTP ${txR.status}`);
+  const txData = await txR.json();
+
+  const tx = txData?.data?.[recentTxId];
+  if (!tx) throw new Error('Blockchair: could not read TX data');
+
+  const outputs = tx.outputs || [];
+  const expectedSats = Math.round(parseFloat(getBCHAmount()) * 1e8);
+  const tolerance = Math.max(expectedSats * 0.06, 5000); // 6% or min 5000 sats
+
+  for (const out of outputs) {
+    // Blockchair returns addresses without prefix — match both ways
+    const outAddr = out.recipient || '';
+    if (outAddr === plain || outAddr === BCH_ADDRESS) {
+      const diff = Math.abs(out.value - expectedSats);
+      if (diff <= tolerance) {
+        return { found: true, txid: recentTxId };
+      }
+    }
+  }
+
+  return { found: false, message: 'Payment not detected yet. BCH usually appears within 30 seconds.' };
+}
+
+// ── API method 2: bch.info / rest.bch.info (fallback) ────
+async function checkViaBchApi() {
+  // rest.bch.info is a public CORS-enabled BCH REST API
+  const plain = BCH_ADDRESS_PLAIN;
+  const url = `https://rest.bch.info/v2/address/details/${plain}`;
+  const r = await fetch(url, { headers: { 'Accept': 'application/json' } });
+  if (!r.ok) throw new Error(`bch.info HTTP ${r.status}`);
+  const data = await r.json();
+
+  const totalReceived = data.totalReceived || 0; // in BCH
+  const unconfirmedBalance = data.unconfirmedBalance || 0;
+  const txids = data.txids || [];
+
+  if (txids.length === 0) return { found: false, message: 'No transactions on this address yet.' };
+
+  // Check most recent TX
+  const expectedBCH = parseFloat(getBCHAmount());
+  const tolerance = expectedBCH * 0.06;
+
+  // Get TX details
+  const txUrl = `https://rest.bch.info/v2/transaction/details/${txids[0]}`;
+  const txR = await fetch(txUrl, { headers: { 'Accept': 'application/json' } });
+  if (!txR.ok) throw new Error(`bch.info TX HTTP ${txR.status}`);
+  const txData = await txR.json();
+
+  const vout = txData.vout || [];
+  for (const out of vout) {
+    const addrs = out.scriptPubKey?.addresses || [];
+    const val = parseFloat(out.value || 0);
+    if (addrs.some(a => a.includes(plain) || a === BCH_ADDRESS)) {
+      if (Math.abs(val - expectedBCH) <= tolerance) {
+        return { found: true, txid: txids[0] };
+      }
+    }
+  }
+
+  return { found: false, message: 'Payment not detected yet. BCH usually appears within 30 seconds.' };
 }
 
 function revealDownload() {
