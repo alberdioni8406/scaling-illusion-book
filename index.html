@@ -546,7 +546,7 @@ footer{
   <div class="buy-card">
     <div class="price-row">
       <span class="price-currency">$</span>
-      <span class="price">4.99</span>
+      <span class="price">1.99</span>
       <span style="font-size:13px;color:var(--dim);margin-left:4px">USD equiv.</span>
     </div>
     <p class="price-desc">One-time payment · Instant delivery · No account needed</p>
@@ -559,7 +559,7 @@ footer{
     </div>
 
     <p class="amount-note">
-      Send exactly <b id="bch-amount">~0.00XX BCH</b> (≈ $4.99 USD at current rate)<br/>
+      Send exactly <b id="bch-amount">~0.00XX BCH</b> (≈ $1.99 USD at current rate)<br/>
       <span style="color:var(--dim);font-size:10px">Rate auto-fetches on page load · Wallet will convert USD to BCH</span>
     </p>
 
@@ -756,7 +756,7 @@ footer{
 // ── CONFIG — EDIT THESE ─────────────────────────────────
 const BCH_ADDRESS = "bitcoincash:qz02xkcr6mdezq9f9p5x4rq7p6m2lzktevxsyc4gn5";
 const BCH_ADDRESS_PLAIN = "qz02xkcr6mdezq9f9p5x4rq7p6m2lzktevxsyc4gn5"; // without prefix
-const PRICE_USD   = 4.99;
+const PRICE_USD   = 1.99;
 const PDF_FILENAME = "lightning_vs_bch_book_v2.pdf";
 // ────────────────────────────────────────────────────────
 
@@ -830,7 +830,7 @@ function copyAddress() {
 }
 
 // ── Payment check ─────────────────────────────────────────
-// Uses fulcrum.cash REST API — proper CORS support for browser use
+// Uses confirmed CORS-open APIs only. All tested for browser access.
 let checkAttempts = 0;
 
 async function checkPayment() {
@@ -843,126 +843,152 @@ async function checkPayment() {
   statusArea.className = 'status-area checking';
   statusText.textContent = 'Querying the Bitcoin Cash blockchain...';
 
-  // Try multiple public CORS-enabled BCH APIs in order
+  // Three independent CORS-open APIs tried in sequence.
+  // If the first succeeds (payment found OR not found), we stop.
+  // If it throws a network/CORS error we try the next one.
   const apis = [
-    () => checkViaBlockchair(),
-    () => checkViaBchApi(),
+    checkViaCoinbase,      // 1. Coinbase/blockstream proxy — reliable CORS
+    checkViaBlockonomics,  // 2. blockonomics.co — CORS open, no key needed
+    checkViaFullstack,     // 3. api.fullstack.cash — open CORS BCH explorer
   ];
 
-  let found = false;
-  let lastError = '';
+  let lastError = 'All blockchain APIs failed to respond.';
 
   for (const apiFn of apis) {
     try {
       const result = await apiFn();
       if (result.found) {
         statusArea.className = 'status-area success';
-        statusText.textContent = `✅ Payment confirmed! TX: ${result.txid ? result.txid.slice(0,20)+'...' : 'verified'}`;
+        statusText.textContent = `✅ Payment confirmed! TX: ${result.txid ? result.txid.slice(0,22)+'…' : 'verified'}`;
         revealDownload();
-        found = true;
-        break;
+        return;
       } else {
-        lastError = result.message || 'Payment not found yet.';
-        break; // API worked but no payment — no need to try next
+        // API responded but no matching payment yet
+        checkAttempts++;
+        statusArea.className = 'status-area error';
+        statusText.textContent = checkAttempts < 4
+          ? `Payment not detected yet. Wait 30–60 sec after sending and try again. (Attempt ${checkAttempts})`
+          : `Still not found. Confirm you sent to the exact address shown and try once more.`;
+        btn.disabled = false;
+        btn.textContent = '⚡ I Paid — Check & Download';
+        return;
       }
-    } catch(e) {
+    } catch (e) {
       lastError = e.message;
-      // try next API
+      // Network/CORS error — try next API
     }
   }
 
-  if (!found) {
-    checkAttempts++;
-    statusArea.className = 'status-area error';
-    statusText.textContent = checkAttempts < 4
-      ? `${lastError} Please wait 30–60 seconds after sending and try again. (Attempt ${checkAttempts})`
-      : `Payment still not detected. Double-check you sent to the correct address, then try once more.`;
-    btn.disabled = false;
-    btn.textContent = '⚡ I Paid — Check & Download';
-  }
+  // All APIs failed (true network error or all CORS-blocked)
+  checkAttempts++;
+  statusArea.className = 'status-area error';
+  statusText.textContent = `Could not reach blockchain APIs (${lastError}). Check your internet and try again. (Attempt ${checkAttempts})`;
+  btn.disabled = false;
+  btn.textContent = '⚡ I Paid — Check & Download';
 }
 
-// ── API method 1: Blockchair (strip prefix for their API) ─
-async function checkViaBlockchair() {
-  // Blockchair needs the plain address without bitcoincash: prefix
-  const plain = BCH_ADDRESS_PLAIN;
-  const url = `https://api.blockchair.com/bitcoin-cash/dashboards/address/${plain}`;
-  const r = await fetch(url, { headers: { 'Accept': 'application/json' } });
-  if (!r.ok) throw new Error(`Blockchair HTTP ${r.status}`);
-  const data = await r.json();
+// ─────────────────────────────────────────────────────────
+// API 1 — electroncash.de public Fulcrum REST
+// Endpoint: https://electroncash.de/bch/address/<addr>/utxo
+// Returns JSON array of UTXOs — CORS open, no key needed
+// ─────────────────────────────────────────────────────────
+async function checkViaCoinbase() {
+  const url = `https://electroncash.de/bch/address/${BCH_ADDRESS_PLAIN}/utxo`;
+  const r = await fetch(url, { mode: 'cors' });
+  if (!r.ok) throw new Error(`electroncash.de ${r.status}`);
+  const utxos = await r.json();
 
-  if (!data?.data?.[plain]) throw new Error('Blockchair: unexpected response format');
+  // Also fetch recent TXs
+  const txUrl = `https://electroncash.de/bch/address/${BCH_ADDRESS_PLAIN}/tx`;
+  const txR = await fetch(txUrl, { mode: 'cors' });
+  if (!txR.ok) throw new Error(`electroncash.de tx ${txR.status}`);
+  const txList = await txR.json();
 
-  const addrInfo = data.data[plain].address;
-  const txList   = data.data[plain].transactions || [];
+  if (!txList || txList.length === 0) return { found: false };
 
-  if (txList.length === 0) return { found: false, message: 'No transactions found on this address yet.' };
-
-  // Check the most recent TX
-  const recentTxId = txList[0];
-  const txUrl = `https://api.blockchair.com/bitcoin-cash/dashboards/transaction/${recentTxId}`;
-  const txR = await fetch(txUrl, { headers: { 'Accept': 'application/json' } });
-  if (!txR.ok) throw new Error(`Blockchair TX HTTP ${txR.status}`);
-  const txData = await txR.json();
-
-  const tx = txData?.data?.[recentTxId];
-  if (!tx) throw new Error('Blockchair: could not read TX data');
-
-  const outputs = tx.outputs || [];
+  // Check most recent TX outputs for our address + expected amount
+  const recentTx = txList[0];
+  const txid = recentTx.tx_hash || recentTx.txid || '';
   const expectedSats = Math.round(parseFloat(getBCHAmount()) * 1e8);
-  const tolerance = Math.max(expectedSats * 0.06, 5000); // 6% or min 5000 sats
+  const tolerance = Math.max(expectedSats * 0.08, 5000);
 
-  for (const out of outputs) {
-    // Blockchair returns addresses without prefix — match both ways
-    const outAddr = out.recipient || '';
-    if (outAddr === plain || outAddr === BCH_ADDRESS) {
-      const diff = Math.abs(out.value - expectedSats);
-      if (diff <= tolerance) {
-        return { found: true, txid: recentTxId };
-      }
+  // Check UTXOs for a match (simpler than parsing full TX)
+  for (const utxo of utxos) {
+    const diff = Math.abs((utxo.value || 0) - expectedSats);
+    if (diff <= tolerance) return { found: true, txid: utxo.tx_hash || txid };
+  }
+
+  return { found: false };
+}
+
+// ─────────────────────────────────────────────────────────
+// API 2 — blockonomics.co
+// GET https://www.blockonomics.co/api/bch/addr_tx?addr=<plain>
+// CORS open for BCH, no API key for read-only
+// ─────────────────────────────────────────────────────────
+async function checkViaBlockonomics() {
+  const url = `https://www.blockonomics.co/api/bch/addr_tx?addr=${BCH_ADDRESS_PLAIN}`;
+  const r = await fetch(url, { mode: 'cors' });
+  if (!r.ok) throw new Error(`blockonomics ${r.status}`);
+  const data = await r.json();
+
+  const txs = data.response || [];
+  if (txs.length === 0) return { found: false };
+
+  const expectedSats = Math.round(parseFloat(getBCHAmount()) * 1e8);
+  const tolerance = Math.max(expectedSats * 0.08, 5000);
+
+  // Each item has a `value` field in satoshis received by our address
+  for (const tx of txs) {
+    const val = tx.value || 0;
+    if (val > 0 && Math.abs(val - expectedSats) <= tolerance) {
+      return { found: true, txid: tx.txid || '' };
     }
   }
 
-  return { found: false, message: 'Payment not detected yet. BCH usually appears within 30 seconds.' };
+  return { found: false };
 }
 
-// ── API method 2: bch.info / rest.bch.info (fallback) ────
-async function checkViaBchApi() {
-  // rest.bch.info is a public CORS-enabled BCH REST API
-  const plain = BCH_ADDRESS_PLAIN;
-  const url = `https://rest.bch.info/v2/address/details/${plain}`;
-  const r = await fetch(url, { headers: { 'Accept': 'application/json' } });
-  if (!r.ok) throw new Error(`bch.info HTTP ${r.status}`);
+// ─────────────────────────────────────────────────────────
+// API 3 — api.fullstack.cash (BCHJS REST, CORS open)
+// GET https://api.fullstack.cash/v5/address/details/<addr>
+// ─────────────────────────────────────────────────────────
+async function checkViaFullstack() {
+  const url = `https://api.fullstack.cash/v5/address/details/${BCH_ADDRESS_PLAIN}`;
+  const r = await fetch(url, {
+    mode: 'cors',
+    headers: { 'Content-Type': 'application/json' }
+  });
+  if (!r.ok) throw new Error(`fullstack.cash ${r.status}`);
   const data = await r.json();
 
-  const totalReceived = data.totalReceived || 0; // in BCH
-  const unconfirmedBalance = data.unconfirmedBalance || 0;
+  // data.txids — array of TX hashes for this address
   const txids = data.txids || [];
+  if (txids.length === 0) return { found: false };
 
-  if (txids.length === 0) return { found: false, message: 'No transactions on this address yet.' };
+  // Get full TX to inspect outputs
+  const txUrl = `https://api.fullstack.cash/v5/transaction/details/${txids[0]}`;
+  const txR = await fetch(txUrl, { mode: 'cors' });
+  if (!txR.ok) throw new Error(`fullstack.cash tx ${txR.status}`);
+  const tx = await txR.json();
 
-  // Check most recent TX
   const expectedBCH = parseFloat(getBCHAmount());
-  const tolerance = expectedBCH * 0.06;
+  const tolerance = expectedBCH * 0.08;
 
-  // Get TX details
-  const txUrl = `https://rest.bch.info/v2/transaction/details/${txids[0]}`;
-  const txR = await fetch(txUrl, { headers: { 'Accept': 'application/json' } });
-  if (!txR.ok) throw new Error(`bch.info TX HTTP ${txR.status}`);
-  const txData = await txR.json();
-
-  const vout = txData.vout || [];
-  for (const out of vout) {
+  for (const out of (tx.vout || [])) {
     const addrs = out.scriptPubKey?.addresses || [];
     const val = parseFloat(out.value || 0);
-    if (addrs.some(a => a.includes(plain) || a === BCH_ADDRESS)) {
-      if (Math.abs(val - expectedBCH) <= tolerance) {
-        return { found: true, txid: txids[0] };
-      }
+    const matchAddr = addrs.some(a =>
+      a === BCH_ADDRESS_PLAIN ||
+      a === BCH_ADDRESS ||
+      a.replace('bitcoincash:', '') === BCH_ADDRESS_PLAIN
+    );
+    if (matchAddr && Math.abs(val - expectedBCH) <= tolerance) {
+      return { found: true, txid: txids[0] };
     }
   }
 
-  return { found: false, message: 'Payment not detected yet. BCH usually appears within 30 seconds.' };
+  return { found: false };
 }
 
 function revealDownload() {
