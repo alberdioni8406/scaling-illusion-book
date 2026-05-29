@@ -850,56 +850,69 @@ async function checkPayment() {
   statusText.textContent = 'Querying the Bitcoin Cash blockchain...';
 
   try {
-    // Use Blockchair API (free, no key needed for basic lookups)
-    const url = `https://api.blockchair.com/bitcoin-cash/dashboards/address/${BCH_ADDRESS}?limit=5`;
-    const r = await fetch(url);
-    const data = await r.json();
+  // Use raw address (NO bitcoincash: prefix)
+  const address = "qz02xkcr6mdezq9f9p5x4rq7p6m2lzktevxsyc4gn5";
 
-    if (!data || !data.data || !data.data[BCH_ADDRESS]) {
-      throw new Error('Could not read address data');
-    }
+  const url = `https://api.blockchair.com/bitcoin-cash/dashboards/address/${address}`;
+  const r = await fetch(url);
+  const data = await r.json();
 
-    const addrData = data.data[BCH_ADDRESS];
-    const txCount = addrData.address.transaction_count;
-    const totalReceived = addrData.address.received; // in satoshis
-    const transactions = addrData.transactions || [];
+  if (!data || !data.data || !data.data[address]) {
+    throw new Error('Could not read address data');
+  }
 
-    // Check if there's any recent transaction
-    // In production you'd check the exact amount against recent TXs
-    // Here we check if received > 0 as a demo flow
-    // For real use: compare bchAmount against recent unconfirmed/confirmed TX
+  const addrData = data.data[address];
 
-    // Try to find a recent incoming TX matching approximate amount
-    let paymentFound = false;
-    let txHash = null;
+  const txCount = addrData.address.transaction_count;
+  const totalReceived = addrData.address.received;
 
-    if (transactions.length > 0) {
-      // Get recent TX details
-      const recentTx = transactions[0];
-      const txUrl = `https://api.blockchair.com/bitcoin-cash/dashboards/transaction/${recentTx}`;
-      const txR = await fetch(txUrl);
-      const txData = await txR.json();
+  // Blockchair does NOT reliably return full tx list here
+  // So we use the last transactions array safely
+  const transactions = addrData.transactions || [];
 
-      if (txData && txData.data && txData.data[recentTx]) {
-        const tx = txData.data[recentTx];
-        const outputs = tx.outputs || [];
+  let paymentFound = false;
+  let txHash = null;
 
-        // Check if any output goes to our address with roughly the right amount
-        const expectedSats = Math.round(getBCHAmount() * 1e8);
-        const tolerance = expectedSats * 0.05; // 5% tolerance
+  if (transactions.length > 0) {
 
-        for (const out of outputs) {
-          if (out.recipient === BCH_ADDRESS) {
-            const diff = Math.abs(out.value - expectedSats);
-            if (diff <= tolerance || getBCHAmount() <= 0.001) {
-              paymentFound = true;
-              txHash = recentTx;
-              break;
-            }
+    const recentTx = transactions[0];
+
+    const txUrl = `https://api.blockchair.com/bitcoin-cash/dashboards/transaction/${recentTx}`;
+    const txR = await fetch(txUrl);
+    const txData = await txR.json();
+
+    if (txData && txData.data && txData.data[recentTx]) {
+
+      const tx = txData.data[recentTx];
+
+      const outputs = tx.outputs || [];
+
+      const expectedSats = Math.round(getBCHAmount() * 1e8);
+      const tolerance = expectedSats * 0.05;
+
+      for (const out of outputs) {
+
+        // Blockchair uses "recipient" sometimes, but safer fallback:
+        const recipient = out.recipient || out.address;
+
+        if (recipient === address) {
+
+          const diff = Math.abs(out.value - expectedSats);
+
+          if (diff <= tolerance || getBCHAmount() <= 0.001) {
+            paymentFound = true;
+            txHash = recentTx;
+            break;
           }
         }
       }
     }
+  }
+
+} catch (err) {
+  console.error(err);
+  throw new Error('Could not read address data');
+}
 
     if (paymentFound) {
       statusArea.className = 'status-area success';
