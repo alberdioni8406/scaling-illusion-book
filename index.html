@@ -765,7 +765,7 @@ const MIN_CONFIRMS = 0;
 // ── QR Code (pure JS — no external lib) ─────────────────
 // Simple QR generation via goqr.me API rendered onto canvas
 async function renderQR() {
-  const addr = bitcoincash:qz02xkcr6mdezq9f9p5x4rq7p6m2lzktevxsyc4gn5;
+  const addr = BCH_ADDRESS;
   const canvas = document.getElementById('qr-canvas');
   const ctx = canvas.getContext('2d');
 
@@ -851,15 +851,15 @@ async function checkPayment() {
 
   try {
     // Use Blockchair API (free, no key needed for basic lookups)
-    const url = `https://api.blockchair.com/bitcoin-cash/dashboards/address/${qz02xkcr6mdezq9f9p5x4rq7p6m2lzktevxsyc4gn5}?limit=5`;
+    const url = `https://api.blockchair.com/bitcoin-cash/dashboards/address/${BCH_ADDRESS}?limit=5`;
     const r = await fetch(url);
     const data = await r.json();
 
-    if (!data || !data.data || !data.data[qz02xkcr6mdezq9f9p5x4rq7p6m2lzktevxsyc4gn5]) {
+    if (!data || !data.data || !data.data[BCH_ADDRESS]) {
       throw new Error('Could not read address data');
     }
 
-    const addrData = data.data[qz02xkcr6mdezq9f9p5x4rq7p6m2lzktevxsyc4gn5];
+    const addrData = data.data[BCH_ADDRESS];
     const txCount = addrData.address.transaction_count;
     const totalReceived = addrData.address.received; // in satoshis
     const transactions = addrData.transactions || [];
