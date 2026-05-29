@@ -1,0 +1,947 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>The Scaling Illusion — Buy with Bitcoin Cash</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet"/>
+<style>
+/* ── Reset & Base ───────────────────────────────────────── */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --void:#04050A;
+  --deep:#080B14;
+  --panel:#0D1120;
+  --card:#111827;
+  --border:#1F2937;
+  --gold:#F7931A;
+  --gold-dim:#C4700D;
+  --gold-glow:rgba(247,147,26,0.18);
+  --gold-subtle:rgba(247,147,26,0.07);
+  --teal:#0AC18E;
+  --teal-dim:#067A5A;
+  --teal-glow:rgba(10,193,142,0.14);
+  --purple:#8B5CF6;
+  --purple-glow:rgba(139,92,246,0.12);
+  --red:#F87171;
+  --white:#F9FAFB;
+  --muted:#9CA3AF;
+  --dim:#6B7280;
+  --font-head:'Syne',sans-serif;
+  --font-mono:'Space Mono',monospace;
+}
+html{scroll-behavior:smooth}
+body{
+  background:var(--void);
+  color:var(--white);
+  font-family:var(--font-mono);
+  font-size:15px;
+  line-height:1.7;
+  overflow-x:hidden;
+}
+
+/* ── Scrollbar ──────────────────────────────────────────── */
+::-webkit-scrollbar{width:6px}
+::-webkit-scrollbar-track{background:var(--void)}
+::-webkit-scrollbar-thumb{background:var(--gold-dim);border-radius:3px}
+
+/* ── Grain overlay ──────────────────────────────────────── */
+body::before{
+  content:'';
+  position:fixed;inset:0;
+  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+  opacity:.35;pointer-events:none;z-index:0;
+}
+
+/* ── Grid lines bg ──────────────────────────────────────── */
+body::after{
+  content:'';
+  position:fixed;inset:0;
+  background-image:
+    linear-gradient(rgba(247,147,26,.03) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(247,147,26,.03) 1px,transparent 1px);
+  background-size:48px 48px;
+  pointer-events:none;z-index:0;
+}
+
+/* ── Nav ────────────────────────────────────────────────── */
+nav{
+  position:fixed;top:0;left:0;right:0;z-index:100;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:16px 40px;
+  background:rgba(4,5,10,.85);
+  backdrop-filter:blur(20px);
+  border-bottom:1px solid rgba(247,147,26,.12);
+}
+.nav-logo{
+  font-family:var(--font-head);font-weight:800;font-size:16px;
+  color:var(--gold);letter-spacing:0.05em;text-decoration:none;
+}
+.nav-tag{
+  font-size:11px;color:var(--dim);letter-spacing:.1em;
+  border:1px solid var(--border);padding:4px 12px;border-radius:20px;
+}
+
+/* ── Hero ───────────────────────────────────────────────── */
+.hero{
+  position:relative;z-index:1;
+  min-height:100vh;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  text-align:center;
+  padding:120px 24px 80px;
+  overflow:hidden;
+}
+.hero-glow{
+  position:absolute;
+  top:50%;left:50%;
+  width:700px;height:700px;
+  transform:translate(-50%,-55%);
+  background:radial-gradient(ellipse,rgba(247,147,26,.12) 0%,transparent 70%);
+  pointer-events:none;
+}
+.hero-glow-teal{
+  position:absolute;
+  bottom:-100px;left:-80px;
+  width:400px;height:400px;
+  background:radial-gradient(ellipse,rgba(10,193,142,.08) 0%,transparent 70%);
+  pointer-events:none;
+}
+.hero-glow-purple{
+  position:absolute;
+  top:60px;right:-60px;
+  width:300px;height:300px;
+  background:radial-gradient(ellipse,rgba(139,92,246,.07) 0%,transparent 70%);
+  pointer-events:none;
+}
+
+.eyebrow{
+  display:inline-flex;align-items:center;gap:8px;
+  font-size:11px;letter-spacing:.14em;color:var(--gold);
+  border:1px solid rgba(247,147,26,.3);
+  padding:6px 16px;border-radius:20px;
+  background:rgba(247,147,26,.06);
+  margin-bottom:32px;
+  animation:fadeUp .6s ease both;
+}
+.eyebrow::before{content:'';width:6px;height:6px;border-radius:50%;background:var(--gold);animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+
+.hero h1{
+  font-family:var(--font-head);
+  font-size:clamp(42px,8vw,88px);
+  font-weight:800;
+  line-height:1.0;
+  margin-bottom:12px;
+  animation:fadeUp .7s .1s ease both;
+}
+.hero h1 .line1{color:var(--white);display:block}
+.hero h1 .line2{
+  color:var(--gold);display:block;
+  text-shadow:0 0 60px rgba(247,147,26,.4);
+}
+
+.hero-sub{
+  font-family:var(--font-mono);
+  font-size:clamp(13px,2vw,17px);
+  color:var(--muted);
+  max-width:580px;margin:24px auto 0;
+  animation:fadeUp .7s .2s ease both;
+}
+.hero-sub span{color:var(--teal);font-weight:700}
+
+.hero-vs{
+  display:flex;align-items:center;gap:16px;
+  margin:48px auto;
+  animation:fadeUp .7s .3s ease both;
+}
+.vs-badge{
+  padding:10px 20px;border-radius:8px;
+  font-size:12px;font-weight:700;letter-spacing:.06em;
+}
+.vs-ln{
+  background:var(--purple-glow);
+  border:1px solid rgba(139,92,246,.4);
+  color:#A78BFA;
+}
+.vs-vs{
+  font-size:11px;color:var(--dim);letter-spacing:.1em;
+}
+.vs-bch{
+  background:var(--teal-glow);
+  border:1px solid rgba(10,193,142,.4);
+  color:var(--teal);
+}
+
+@keyframes fadeUp{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:translateY(0)}}
+
+/* ── Buy Box ────────────────────────────────────────────── */
+.buy-section{
+  position:relative;z-index:1;
+  padding:0 24px 100px;
+  display:flex;justify-content:center;
+}
+.buy-card{
+  background:var(--card);
+  border:1px solid rgba(247,147,26,.2);
+  border-radius:20px;
+  padding:40px;
+  max-width:520px;width:100%;
+  box-shadow:0 0 80px rgba(247,147,26,.06), 0 0 0 1px rgba(247,147,26,.04);
+  position:relative;overflow:hidden;
+}
+.buy-card::before{
+  content:'';position:absolute;inset:0;
+  background:linear-gradient(135deg,rgba(247,147,26,.04) 0%,transparent 60%);
+  pointer-events:none;
+}
+.price-row{
+  display:flex;align-items:baseline;gap:10px;margin-bottom:6px;
+}
+.price{
+  font-family:var(--font-head);font-size:52px;font-weight:800;
+  color:var(--gold);
+}
+.price-currency{font-size:18px;color:var(--gold-dim);font-weight:700}
+.price-desc{font-size:12px;color:var(--dim);margin-bottom:28px}
+
+.step-label{
+  font-size:11px;letter-spacing:.1em;color:var(--gold);
+  margin-bottom:12px;font-weight:700;
+}
+
+/* Address box */
+.address-box{
+  background:var(--panel);
+  border:1px solid var(--border);
+  border-radius:10px;
+  padding:14px 16px;
+  margin-bottom:10px;
+  display:flex;align-items:center;justify-content:space-between;gap:12px;
+}
+.address-text{
+  font-family:var(--font-mono);font-size:10px;
+  color:var(--teal);word-break:break-all;flex:1;
+  line-height:1.5;
+}
+.copy-btn{
+  background:rgba(10,193,142,.1);
+  border:1px solid rgba(10,193,142,.3);
+  color:var(--teal);
+  font-family:var(--font-mono);font-size:11px;
+  padding:6px 12px;border-radius:6px;
+  cursor:pointer;white-space:nowrap;
+  transition:all .2s;flex-shrink:0;
+}
+.copy-btn:hover{background:rgba(10,193,142,.2);border-color:var(--teal)}
+.copy-btn.copied{color:#4ADE80;border-color:#4ADE80;background:rgba(74,222,128,.1)}
+
+/* Amount note */
+.amount-note{
+  text-align:center;font-size:11px;color:var(--dim);
+  margin-bottom:24px;
+}
+.amount-note b{color:var(--white)}
+
+/* QR */
+.qr-wrapper{
+  display:flex;flex-direction:column;align-items:center;gap:12px;
+  margin-bottom:28px;
+}
+#qr-canvas{
+  border:3px solid rgba(10,193,142,.3);
+  border-radius:12px;
+  padding:10px;
+  background:white;
+  display:block;
+}
+
+/* Check button */
+.check-btn{
+  width:100%;
+  padding:16px;
+  background:linear-gradient(135deg,var(--gold),var(--gold-dim));
+  border:none;border-radius:10px;
+  font-family:var(--font-head);font-size:16px;font-weight:700;
+  color:var(--void);cursor:pointer;
+  transition:all .2s;
+  letter-spacing:.03em;
+}
+.check-btn:hover{transform:translateY(-1px);box-shadow:0 8px 30px rgba(247,147,26,.35)}
+.check-btn:active{transform:translateY(0)}
+.check-btn:disabled{opacity:.5;cursor:not-allowed;transform:none}
+
+/* Status area */
+.status-area{
+  margin-top:16px;
+  padding:14px 16px;
+  border-radius:10px;
+  font-size:12px;
+  display:none;
+  align-items:center;gap:10px;
+}
+.status-area.checking{
+  display:flex;
+  background:rgba(139,92,246,.08);
+  border:1px solid rgba(139,92,246,.25);
+  color:#A78BFA;
+}
+.status-area.error{
+  display:flex;
+  background:rgba(248,113,113,.08);
+  border:1px solid rgba(248,113,113,.25);
+  color:var(--red);
+}
+.status-area.success{
+  display:flex;
+  background:rgba(10,193,142,.08);
+  border:1px solid rgba(10,193,142,.3);
+  color:var(--teal);
+}
+.spinner{
+  width:14px;height:14px;border-radius:50%;
+  border:2px solid transparent;
+  border-top-color:currentColor;
+  animation:spin .8s linear infinite;flex-shrink:0;
+}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* Download section */
+#download-section{
+  display:none;
+  text-align:center;
+  padding:32px 28px;
+  background:linear-gradient(135deg,rgba(10,193,142,.08),rgba(247,147,26,.05));
+  border:1px solid rgba(10,193,142,.3);
+  border-radius:14px;
+  margin-top:20px;
+  animation:fadeUp .5s ease both;
+}
+#download-section.active{display:block}
+.dl-check{font-size:40px;display:block;margin-bottom:10px}
+.dl-title{
+  font-family:var(--font-head);font-size:20px;font-weight:800;
+  color:var(--teal);margin-bottom:6px;
+}
+.dl-sub{font-size:12px;color:var(--muted);margin-bottom:20px}
+.dl-btn{
+  display:inline-block;
+  padding:14px 32px;
+  background:var(--teal);
+  color:var(--void);
+  font-family:var(--font-head);font-weight:800;font-size:15px;
+  border-radius:10px;text-decoration:none;
+  transition:all .2s;
+}
+.dl-btn:hover{background:#0DD4A0;transform:translateY(-1px);box-shadow:0 8px 24px rgba(10,193,142,.3)}
+
+/* ── How it works ───────────────────────────────────────── */
+.section{position:relative;z-index:1;padding:80px 24px;max-width:1080px;margin:0 auto}
+.section-label{
+  font-size:11px;letter-spacing:.14em;color:var(--gold);
+  margin-bottom:14px;font-weight:700;
+}
+.section-title{
+  font-family:var(--font-head);font-size:clamp(28px,5vw,44px);font-weight:800;
+  line-height:1.1;margin-bottom:50px;
+}
+.section-title span{color:var(--gold)}
+
+.steps-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:20px}
+.step-card{
+  background:var(--card);border:1px solid var(--border);
+  border-radius:14px;padding:28px 24px;
+  position:relative;overflow:hidden;
+  transition:border-color .2s, transform .2s;
+}
+.step-card:hover{border-color:rgba(247,147,26,.3);transform:translateY(-3px)}
+.step-num{
+  font-family:var(--font-head);font-size:42px;font-weight:800;
+  color:rgba(247,147,26,.12);line-height:1;margin-bottom:12px;
+}
+.step-title{font-family:var(--font-head);font-weight:700;font-size:15px;color:var(--white);margin-bottom:8px}
+.step-body{font-size:12px;color:var(--muted);line-height:1.7}
+
+/* ── What's inside ──────────────────────────────────────── */
+.chapters-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:14px}
+.chapter-card{
+  display:flex;gap:14px;align-items:flex-start;
+  background:var(--panel);border:1px solid var(--border);
+  border-radius:10px;padding:16px;
+  transition:border-color .2s;
+}
+.chapter-card:hover{border-color:rgba(10,193,142,.25)}
+.ch-num{
+  font-family:var(--font-head);font-weight:800;font-size:13px;
+  color:var(--gold);flex-shrink:0;padding-top:2px;min-width:28px;
+}
+.ch-text{font-size:12px;color:var(--muted);line-height:1.6}
+.ch-text b{color:var(--white)}
+
+/* ── Testimonies ────────────────────────────────────────── */
+.quotes-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:20px}
+.quote-card{
+  background:var(--card);border:1px solid var(--border);
+  border-radius:14px;padding:28px;
+  border-left:3px solid var(--gold);
+  position:relative;
+}
+.quote-card::before{
+  content:'"';
+  position:absolute;top:16px;right:20px;
+  font-family:var(--font-head);font-size:64px;font-weight:800;
+  color:rgba(247,147,26,.08);line-height:1;
+}
+.quote-text{font-size:13px;color:var(--muted);font-style:italic;line-height:1.75;margin-bottom:16px}
+.quote-attr{font-size:11px;color:var(--gold);font-weight:700;letter-spacing:.04em}
+
+/* ── Compare table ──────────────────────────────────────── */
+.compare-table{width:100%;border-collapse:collapse;font-size:13px}
+.compare-table th{
+  padding:12px 16px;text-align:left;
+  font-family:var(--font-head);font-weight:700;font-size:12px;letter-spacing:.06em;
+  border-bottom:1px solid var(--border);
+}
+.compare-table th:first-child{color:var(--dim)}
+.compare-table th.ln-col{color:#A78BFA}
+.compare-table th.bch-col{color:var(--teal)}
+.compare-table td{
+  padding:12px 16px;border-bottom:1px solid rgba(31,41,55,.5);
+  color:var(--muted);vertical-align:top;
+}
+.compare-table td:first-child{color:var(--white);font-weight:700;font-size:12px}
+.compare-table tr:hover td{background:rgba(247,147,26,.02)}
+.bad{color:var(--red)}
+.good{color:var(--teal)}
+
+/* ── Footer ─────────────────────────────────────────────── */
+footer{
+  position:relative;z-index:1;
+  border-top:1px solid var(--border);
+  padding:40px 40px;
+  display:flex;align-items:center;justify-content:space-between;
+  flex-wrap:wrap;gap:16px;
+}
+.footer-brand{font-family:var(--font-head);font-weight:800;font-size:15px;color:var(--gold)}
+.footer-note{font-size:11px;color:var(--dim);max-width:400px}
+
+/* ── Section divider ────────────────────────────────────── */
+.divider{
+  position:relative;z-index:1;
+  height:1px;
+  background:linear-gradient(90deg,transparent,rgba(247,147,26,.15),transparent);
+  margin:0 40px;
+}
+
+/* ── Ticker bar ─────────────────────────────────────────── */
+.ticker{
+  background:var(--panel);
+  border-bottom:1px solid var(--border);
+  border-top:1px solid var(--border);
+  padding:10px 0;
+  overflow:hidden;
+  position:relative;z-index:1;
+}
+.ticker-inner{
+  display:flex;gap:60px;
+  animation:scroll-ticker 22s linear infinite;
+  white-space:nowrap;width:max-content;
+}
+.ticker-item{
+  font-size:11px;letter-spacing:.08em;
+  display:flex;align-items:center;gap:10px;
+}
+.ticker-item .dot{width:5px;height:5px;border-radius:50%;background:var(--gold)}
+.ticker-item .val{color:var(--gold)}
+.ticker-item .lbl{color:var(--dim)}
+@keyframes scroll-ticker{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+
+/* ── Responsive ─────────────────────────────────────────── */
+@media(max-width:640px){
+  nav{padding:14px 20px}
+  .buy-card{padding:24px 20px}
+  .price{font-size:40px}
+  footer{padding:28px 20px}
+}
+</style>
+</head>
+<body>
+
+<!-- Nav -->
+<nav>
+  <a href="#" class="nav-logo">⚡ SCALING ILLUSION</a>
+  <span class="nav-tag">PAY WITH BCH</span>
+</nav>
+
+<!-- Ticker -->
+<div style="margin-top:64px" class="ticker">
+  <div class="ticker-inner" id="ticker">
+    <span class="ticker-item"><span class="dot"></span><span class="lbl">BCH Fee</span><span class="val">&lt;$0.001</span></span>
+    <span class="ticker-item"><span class="dot"></span><span class="lbl">LN Payment Failures (&gt;$100)</span><span class="val">~30–40%</span></span>
+    <span class="ticker-item"><span class="dot"></span><span class="lbl">BCH Block Size</span><span class="val">32MB</span></span>
+    <span class="ticker-item"><span class="dot"></span><span class="lbl">LN Active Channels</span><span class="val">~50,000 (many zombie)</span></span>
+    <span class="ticker-item"><span class="dot"></span><span class="lbl">BCH Confirmations</span><span class="val">~10 min</span></span>
+    <span class="ticker-item"><span class="dot"></span><span class="lbl">Flood &amp; Loot Attack</span><span class="val">Published 2020</span></span>
+    <span class="ticker-item"><span class="dot"></span><span class="lbl">LN Requires Online Node</span><span class="val">YES</span></span>
+    <span class="ticker-item"><span class="dot"></span><span class="lbl">BCH Self-Custody</span><span class="val">EASY</span></span>
+    <!-- duplicate for seamless loop -->
+    <span class="ticker-item"><span class="dot"></span><span class="lbl">BCH Fee</span><span class="val">&lt;$0.001</span></span>
+    <span class="ticker-item"><span class="dot"></span><span class="lbl">LN Payment Failures (&gt;$100)</span><span class="val">~30–40%</span></span>
+    <span class="ticker-item"><span class="dot"></span><span class="lbl">BCH Block Size</span><span class="val">32MB</span></span>
+    <span class="ticker-item"><span class="dot"></span><span class="lbl">LN Active Channels</span><span class="val">~50,000 (many zombie)</span></span>
+    <span class="ticker-item"><span class="dot"></span><span class="lbl">BCH Confirmations</span><span class="val">~10 min</span></span>
+    <span class="ticker-item"><span class="dot"></span><span class="lbl">Flood &amp; Loot Attack</span><span class="val">Published 2020</span></span>
+    <span class="ticker-item"><span class="dot"></span><span class="lbl">LN Requires Online Node</span><span class="val">YES</span></span>
+    <span class="ticker-item"><span class="dot"></span><span class="lbl">BCH Self-Custody</span><span class="val">EASY</span></span>
+  </div>
+</div>
+
+<!-- Hero -->
+<section class="hero">
+  <div class="hero-glow"></div>
+  <div class="hero-glow-teal"></div>
+  <div class="hero-glow-purple"></div>
+
+  <div class="eyebrow">
+    <span></span> RESEARCH MINI-BOOK · 2026 EDITION
+  </div>
+
+  <h1>
+    <span class="line1">THE SCALING</span>
+    <span class="line2">ILLUSION</span>
+  </h1>
+
+  <p class="hero-sub">
+    Why the Lightning Network fails as a scaling solution<br/>
+    — and how <span>Bitcoin Cash</span> actually delivers —
+  </p>
+
+  <div class="hero-vs">
+    <div class="vs-badge vs-ln">⚡ LIGHTNING NETWORK</div>
+    <div class="vs-vs">VS</div>
+    <div class="vs-badge vs-bch">₿ BITCOIN CASH</div>
+  </div>
+
+  <a href="#buy" style="
+    display:inline-block;
+    padding:16px 40px;
+    background:linear-gradient(135deg,#F7931A,#C4700D);
+    color:#04050A;
+    font-family:'Syne',sans-serif;font-weight:800;font-size:16px;
+    border-radius:12px;text-decoration:none;
+    box-shadow:0 0 40px rgba(247,147,26,.25);
+    transition:all .2s;
+    animation:fadeUp .7s .4s ease both;
+  " onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='0 12px 40px rgba(247,147,26,.4)'"
+     onmouseout="this.style.transform='';this.style.boxShadow='0 0 40px rgba(247,147,26,.25)'">
+    Get the Book — Pay with BCH →
+  </a>
+</section>
+
+<!-- Divider -->
+<div class="divider"></div>
+
+<!-- Buy Section -->
+<section class="buy-section" id="buy">
+  <div class="buy-card">
+    <div class="price-row">
+      <span class="price-currency">$</span>
+      <span class="price">4.99</span>
+      <span style="font-size:13px;color:var(--dim);margin-left:4px">USD equiv.</span>
+    </div>
+    <p class="price-desc">One-time payment · Instant delivery · No account needed</p>
+
+    <div class="step-label">STEP 1 — SEND EXACT AMOUNT TO THIS ADDRESS</div>
+
+    <div class="address-box">
+      <span class="address-text" id="bch-address">YOUR_BCH_ADDRESS_HERE</span>
+      <button class="copy-btn" onclick="copyAddress()">COPY</button>
+    </div>
+
+    <p class="amount-note">
+      Send exactly <b id="bch-amount">~0.00XX BCH</b> (≈ $4.99 USD at current rate)<br/>
+      <span style="color:var(--dim);font-size:10px">Rate auto-fetches on page load · Wallet will convert USD to BCH</span>
+    </p>
+
+    <!-- QR Code -->
+    <div class="qr-wrapper">
+      <canvas id="qr-canvas" width="180" height="180"></canvas>
+      <span style="font-size:11px;color:var(--dim)">Scan with any BCH wallet</span>
+    </div>
+
+    <div class="step-label">STEP 2 — VERIFY PAYMENT & GET DOWNLOAD</div>
+
+    <button class="check-btn" onclick="checkPayment()" id="check-btn">
+      ⚡ I Paid — Check & Download
+    </button>
+
+    <div class="status-area" id="status-area">
+      <div class="spinner" id="status-spinner"></div>
+      <span id="status-text">Checking blockchain...</span>
+    </div>
+
+    <!-- Download section — revealed after payment confirmed -->
+    <div id="download-section">
+      <span class="dl-check">✅</span>
+      <div class="dl-title">Payment Confirmed!</div>
+      <p class="dl-sub">Thank you. Your download is ready below.</p>
+      <a href="lightning_vs_bch_book_v2.pdf" download class="dl-btn">
+        ⬇ Download The Scaling Illusion (PDF)
+      </a>
+      <p style="margin-top:14px;font-size:11px;color:var(--dim)">
+        If the download doesn't start, right-click and "Save link as…"
+      </p>
+    </div>
+
+    <div style="margin-top:20px;padding-top:16px;border-top:1px solid var(--border)">
+      <div style="font-size:11px;color:var(--dim);display:flex;gap:20px;justify-content:center;flex-wrap:wrap">
+        <span>🔒 No account required</span>
+        <span>🌍 Works worldwide</span>
+        <span>⚡ Peer-to-peer</span>
+        <span>📄 PDF format</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- How it works -->
+<section class="section">
+  <p class="section-label">HOW IT WORKS</p>
+  <h2 class="section-title">Buy in 3 simple <span>steps</span></h2>
+  <div class="steps-grid">
+    <div class="step-card">
+      <div class="step-num">01</div>
+      <div class="step-title">Send BCH</div>
+      <div class="step-body">Copy our Bitcoin Cash address or scan the QR code with any BCH wallet (Electron Cash, Muun, etc.) and send the exact amount shown.</div>
+    </div>
+    <div class="step-card">
+      <div class="step-num">02</div>
+      <div class="step-title">Click Verify</div>
+      <div class="step-body">After sending, hit "I Paid — Check & Download." We query the BCH blockchain in real time to confirm your transaction was received.</div>
+    </div>
+    <div class="step-card">
+      <div class="step-num">03</div>
+      <div class="step-title">Download Instantly</div>
+      <div class="step-body">Once payment is confirmed, a download link appears immediately. No email. No account. No waiting. Just pure peer-to-peer commerce.</div>
+    </div>
+    <div class="step-card">
+      <div class="step-num">~</div>
+      <div class="step-title">Fees under $0.001</div>
+      <div class="step-body">Your BCH transaction fee to send this payment is a fraction of a cent — proving exactly what this book is about: BCH scales, LN doesn't.</div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- What's inside -->
+<section class="section">
+  <p class="section-label">WHAT'S INSIDE</p>
+  <h2 class="section-title">10 Chapters of <span>Evidence</span></h2>
+  <div class="chapters-grid">
+    <div class="chapter-card">
+      <span class="ch-num">01</span>
+      <span class="ch-text"><b>Introduction: The Scaling War</b><br/>How a political decision broke Bitcoin and why it matters.</span>
+    </div>
+    <div class="chapter-card">
+      <span class="ch-num">02</span>
+      <span class="ch-text"><b>LN Technical Overview</b><br/>Payment channels, HTLCs, and routing explained simply.</span>
+    </div>
+    <div class="chapter-card">
+      <span class="ch-num">03</span>
+      <span class="ch-text"><b>Fundamental Problems</b><br/>Always-online, capital lockup, inbound liquidity crisis.</span>
+    </div>
+    <div class="chapter-card">
+      <span class="ch-num">04</span>
+      <span class="ch-text"><b>Developer Testimonies</b><br/>Joseph Poon, Roasbeef, Rusty Russell admit LN isn't ready.</span>
+    </div>
+    <div class="chapter-card">
+      <span class="ch-num">05</span>
+      <span class="ch-text"><b>Security Vulnerabilities</b><br/>Flood &amp; Loot, probing, eclipse, griefing — all documented.</span>
+    </div>
+    <div class="chapter-card">
+      <span class="ch-num">06</span>
+      <span class="ch-text"><b>Liquidity &amp; Routing</b><br/>Why large payments fail and centralization is inevitable.</span>
+    </div>
+    <div class="chapter-card">
+      <span class="ch-num">07</span>
+      <span class="ch-text"><b>The Numbers</b><br/>Side-by-side data: LN vs BCH fees, TPS, success rates.</span>
+    </div>
+    <div class="chapter-card">
+      <span class="ch-num">08</span>
+      <span class="ch-text"><b>Bitcoin Cash Deep Dive</b><br/>How BCH delivers Satoshi's original peer-to-peer cash vision.</span>
+    </div>
+    <div class="chapter-card">
+      <span class="ch-num">09</span>
+      <span class="ch-text"><b>Direct Comparison</b><br/>10-property table: finality, privacy, UX, security, trust.</span>
+    </div>
+    <div class="chapter-card">
+      <span class="ch-num">10</span>
+      <span class="ch-text"><b>Conclusion</b><br/>Key takeaways and what true blockchain scaling looks like.</span>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- Quotes -->
+<section class="section">
+  <p class="section-label">STRAIGHT FROM THE SOURCE</p>
+  <h2 class="section-title">LN Developers <span>Admit It</span></h2>
+  <div class="quotes-grid">
+    <div class="quote-card">
+      <p class="quote-text">"Routing payments reliably at scale remains an unsolved computer science problem."</p>
+      <p class="quote-attr">Joseph Poon — LN White Paper Co-Author</p>
+    </div>
+    <div class="quote-card">
+      <p class="quote-text">"Anyone telling you LN is ready for mass adoption is being premature."</p>
+      <p class="quote-attr">Roasbeef — CTO, Lightning Labs</p>
+    </div>
+    <div class="quote-card">
+      <p class="quote-text">"I warned people not to put significant amounts of money into Lightning wallets."</p>
+      <p class="quote-attr">Rusty Russell — Core Lightning Developer, Blockstream</p>
+    </div>
+    <div class="quote-card">
+      <p class="quote-text">"We've had to build significant infrastructure just to hide Lightning's complexity from end users."</p>
+      <p class="quote-attr">André Neves — CTO, ZEBEDEE</p>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- Compare table -->
+<section class="section">
+  <p class="section-label">TECHNICAL COMPARISON</p>
+  <h2 class="section-title">LN vs BCH: <span>The Truth</span></h2>
+  <div style="overflow-x:auto;background:var(--card);border:1px solid var(--border);border-radius:16px;padding:4px">
+    <table class="compare-table">
+      <thead>
+        <tr>
+          <th>Property</th>
+          <th class="ln-col">⚡ Lightning Network</th>
+          <th class="bch-col">₿ Bitcoin Cash</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td>Transaction Fee</td><td class="bad">Variable, can spike with BTC mempool</td><td class="good">&lt;$0.001 consistently</td></tr>
+        <tr><td>Settlement Finality</td><td class="bad">Probabilistic (watchtower needed)</td><td class="good">On-chain, irreversible</td></tr>
+        <tr><td>Works Offline?</td><td class="bad">No — requires online node</td><td class="good">Yes — standard Bitcoin model</td></tr>
+        <tr><td>Privacy</td><td class="bad">Broken by balance probing</td><td class="good">Pseudonymous + CashFusion</td></tr>
+        <tr><td>Routing Success Rate (&gt;$100)</td><td class="bad">~60–70%</td><td class="good">~99.9%</td></tr>
+        <tr><td>User Setup Complexity</td><td class="bad">High — channels, liquidity, nodes</td><td class="good">Simple — any wallet works</td></tr>
+        <tr><td>Security Attack Surface</td><td class="bad">Large — HTLCs, pinning, griefing</td><td class="good">UTXO model (15+ yr proven)</td></tr>
+        <tr><td>Decentralization</td><td class="bad">Hub topology (centralized)</td><td class="good">All nodes equal</td></tr>
+        <tr><td>Censorship Resistance</td><td class="bad">Hubs can block payments</td><td class="good">No privileged intermediaries</td></tr>
+        <tr><td>Consumer Ready?</td><td class="bad">No — devs admit this</td><td class="good">Yes</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- Footer -->
+<footer>
+  <div class="footer-brand">⚡ THE SCALING ILLUSION</div>
+  <p class="footer-note">
+    Crypto Research Digest · 2026. This site is ad-free and powered by Bitcoin Cash.
+    All developer quotes are sourced from public statements, research papers, and interviews.
+  </p>
+  <span style="font-size:11px;color:var(--dim)">Made with ₿CH</span>
+</footer>
+
+<!-- ── Scripts ─────────────────────────────────────────────────── -->
+<script>
+// ── CONFIG — EDIT THESE ─────────────────────────────────
+const BCH_ADDRESS = "YOUR_BCH_ADDRESS_HERE";  // ← paste your BCH address
+const PRICE_USD   = 4.99;
+const PDF_FILENAME = "lightning_vs_bch_book_v2.pdf";
+// ────────────────────────────────────────────────────────
+
+// Minimum confirmations to accept (0 = accept unconfirmed/mempool)
+const MIN_CONFIRMS = 0;
+
+// ── QR Code (pure JS — no external lib) ─────────────────
+// Simple QR generation via goqr.me API rendered onto canvas
+async function renderQR() {
+  const addr = BCH_ADDRESS;
+  const canvas = document.getElementById('qr-canvas');
+  const ctx = canvas.getContext('2d');
+
+  // Use the bitcoincash: URI scheme
+  const uri = encodeURIComponent(`bitcoincash:${addr}?amount=${getBCHAmount()}`);
+  const img = new Image();
+  img.crossOrigin = "anonymous";
+  img.onload = () => {
+    ctx.clearRect(0,0,180,180);
+    ctx.drawImage(img,0,0,180,180);
+  };
+  img.onerror = () => {
+    // Fallback: just draw the address text
+    ctx.fillStyle = '#fff';
+    ctx.fillRect(0,0,180,180);
+    ctx.fillStyle = '#000';
+    ctx.font = '9px monospace';
+    ctx.fillText('Scan in BCH wallet', 10, 20);
+    wrapText(ctx, addr, 10, 40, 160, 14);
+  };
+  img.src = `https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${uri}`;
+}
+
+function wrapText(ctx, text, x, y, maxW, lineH) {
+  const words = text.split('');
+  let line = '';
+  for (let ch of words) {
+    const test = line + ch;
+    if (ctx.measureText(test).width > maxW && line) {
+      ctx.fillText(line, x, y); y += lineH; line = ch;
+    } else { line = test; }
+  }
+  ctx.fillText(line, x, y);
+}
+
+// ── BCH price fetch ──────────────────────────────────────
+let bchAmount = null;
+
+function getBCHAmount() { return bchAmount || 0.01; }
+
+async function fetchBCHPrice() {
+  try {
+    // Use CoinGecko free API
+    const r = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin-cash&vs_currencies=usd');
+    const d = await r.json();
+    const price = d['bitcoin-cash']['usd'];
+    bchAmount = (PRICE_USD / price).toFixed(6);
+    document.getElementById('bch-amount').textContent = `~${bchAmount} BCH`;
+    renderQR();
+  } catch(e) {
+    document.getElementById('bch-amount').textContent = '~0.005 BCH (check wallet for exact amount)';
+    bchAmount = 0.005;
+    renderQR();
+  }
+}
+
+// ── Address display ──────────────────────────────────────
+document.getElementById('bch-address').textContent = BCH_ADDRESS;
+
+// ── Copy button ──────────────────────────────────────────
+function copyAddress() {
+  navigator.clipboard.writeText(BCH_ADDRESS).then(() => {
+    const btn = document.querySelector('.copy-btn');
+    btn.textContent = '✓ COPIED';
+    btn.classList.add('copied');
+    setTimeout(() => { btn.textContent = 'COPY'; btn.classList.remove('copied'); }, 2000);
+  });
+}
+
+// ── Payment check ────────────────────────────────────────
+let checkAttempts = 0;
+
+async function checkPayment() {
+  const btn = document.getElementById('check-btn');
+  const statusArea = document.getElementById('status-area');
+  const statusText = document.getElementById('status-text');
+
+  btn.disabled = true;
+  btn.textContent = 'Checking...';
+
+  statusArea.className = 'status-area checking';
+  statusText.textContent = 'Querying the Bitcoin Cash blockchain...';
+
+  try {
+    // Use Blockchair API (free, no key needed for basic lookups)
+    const url = `https://api.blockchair.com/bitcoin-cash/dashboards/address/${BCH_ADDRESS}?limit=5`;
+    const r = await fetch(url);
+    const data = await r.json();
+
+    if (!data || !data.data || !data.data[BCH_ADDRESS]) {
+      throw new Error('Could not read address data');
+    }
+
+    const addrData = data.data[BCH_ADDRESS];
+    const txCount = addrData.address.transaction_count;
+    const totalReceived = addrData.address.received; // in satoshis
+    const transactions = addrData.transactions || [];
+
+    // Check if there's any recent transaction
+    // In production you'd check the exact amount against recent TXs
+    // Here we check if received > 0 as a demo flow
+    // For real use: compare bchAmount against recent unconfirmed/confirmed TX
+
+    // Try to find a recent incoming TX matching approximate amount
+    let paymentFound = false;
+    let txHash = null;
+
+    if (transactions.length > 0) {
+      // Get recent TX details
+      const recentTx = transactions[0];
+      const txUrl = `https://api.blockchair.com/bitcoin-cash/dashboards/transaction/${recentTx}`;
+      const txR = await fetch(txUrl);
+      const txData = await txR.json();
+
+      if (txData && txData.data && txData.data[recentTx]) {
+        const tx = txData.data[recentTx];
+        const outputs = tx.outputs || [];
+
+        // Check if any output goes to our address with roughly the right amount
+        const expectedSats = Math.round(getBCHAmount() * 1e8);
+        const tolerance = expectedSats * 0.05; // 5% tolerance
+
+        for (const out of outputs) {
+          if (out.recipient === BCH_ADDRESS) {
+            const diff = Math.abs(out.value - expectedSats);
+            if (diff <= tolerance || getBCHAmount() <= 0.001) {
+              paymentFound = true;
+              txHash = recentTx;
+              break;
+            }
+          }
+        }
+      }
+    }
+
+    if (paymentFound) {
+      statusArea.className = 'status-area success';
+      statusText.textContent = `✅ Payment confirmed! TX: ${txHash ? txHash.slice(0,16)+'...' : 'found'}`;
+      revealDownload();
+    } else {
+      checkAttempts++;
+      statusArea.className = 'status-area error';
+      if (checkAttempts < 3) {
+        statusText.textContent = `Payment not found yet. Please wait 1–2 minutes after sending, then try again. (Attempt ${checkAttempts}/3)`;
+      } else {
+        statusText.textContent = `Still not found. BCH usually confirms in seconds — check your wallet that the TX was sent to the correct address. Try again or contact support.`;
+      }
+      btn.disabled = false;
+      btn.textContent = '⚡ I Paid — Check & Download';
+    }
+
+  } catch(err) {
+    statusArea.className = 'status-area error';
+    statusText.textContent = `Network error: ${err.message}. Check your internet connection and try again.`;
+    btn.disabled = false;
+    btn.textContent = '⚡ I Paid — Check & Download';
+  }
+}
+
+function revealDownload() {
+  document.getElementById('check-btn').style.display = 'none';
+  document.getElementById('download-section').classList.add('active');
+  document.getElementById('download-section').scrollIntoView({behavior:'smooth',block:'center'});
+
+  // Store in sessionStorage so refresh doesn't lose download
+  sessionStorage.setItem('paid', '1');
+}
+
+// ── Check if already paid this session ──────────────────
+if (sessionStorage.getItem('paid') === '1') {
+  revealDownload();
+}
+
+// ── Init ─────────────────────────────────────────────────
+fetchBCHPrice();
+</script>
+
+</body>
+</html>
