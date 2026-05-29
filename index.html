@@ -463,6 +463,21 @@ footer{
   .price{font-size:40px}
   footer{padding:28px 20px}
 }
+
+/* ── Suggest buttons ────────────────────────────────────── */
+.suggest-btn{
+  background:var(--panel);
+  border:1px solid var(--border);
+  color:var(--muted);
+  font-family:var(--font-mono);font-size:12px;
+  padding:8px 16px;border-radius:8px;
+  cursor:pointer;transition:all .2s;
+}
+.suggest-btn:hover{border-color:var(--gold);color:var(--gold)}
+.suggest-btn.active{
+  background:rgba(247,147,26,.1);
+  border-color:var(--gold);color:var(--gold);font-weight:700;
+}
 </style>
 </head>
 <body>
@@ -470,7 +485,7 @@ footer{
 <!-- Nav -->
 <nav>
   <a href="#" class="nav-logo">⚡ SCALING ILLUSION</a>
-  <span class="nav-tag">PAY WITH BCH</span>
+  <span class="nav-tag">FREE DOWNLOAD</span>
 </nav>
 
 <!-- Ticker -->
@@ -522,7 +537,7 @@ footer{
     <div class="vs-badge vs-bch">₿ BITCOIN CASH</div>
   </div>
 
-  <a href="#buy" style="
+  <a href="#download" style="
     display:inline-block;
     padding:16px 40px;
     background:linear-gradient(135deg,#F7931A,#C4700D);
@@ -534,73 +549,94 @@ footer{
     animation:fadeUp .7s .4s ease both;
   " onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='0 12px 40px rgba(247,147,26,.4)'"
      onmouseout="this.style.transform='';this.style.boxShadow='0 0 40px rgba(247,147,26,.25)'">
-    Get the Book — Pay with BCH →
+    ⬇ Download Free — No Sign-up →
   </a>
 </section>
 
 <!-- Divider -->
 <div class="divider"></div>
 
-<!-- Buy Section -->
-<section class="buy-section" id="buy">
-  <div class="buy-card">
-    <div class="price-row">
-      <span class="price-currency">$</span>
-      <span class="price">1.99</span>
-      <span style="font-size:13px;color:var(--dim);margin-left:4px">USD equiv.</span>
-    </div>
-    <p class="price-desc">One-time payment · Instant delivery · No account needed</p>
+<!-- Download + Donation Section -->
+<section class="buy-section" id="download">
+  <div style="max-width:560px;width:100%">
 
-    <div class="step-label">STEP 1 — SEND EXACT AMOUNT TO THIS ADDRESS</div>
+    <!-- Free Download Card -->
+    <div class="buy-card" style="margin-bottom:24px;border-color:rgba(10,193,142,.3)">
+      <div style="text-align:center;margin-bottom:20px">
+        <span style="font-size:44px">📖</span>
+        <div style="font-family:var(--font-head);font-size:26px;font-weight:800;color:var(--teal);margin:8px 0 4px">
+          Free Download
+        </div>
+        <p style="font-size:13px;color:var(--muted)">No account · No email · No strings attached</p>
+      </div>
 
-    <div class="address-box">
-      <span class="address-text" id="bch-address">YOUR_BCH_ADDRESS_HERE</span>
-      <button class="copy-btn" onclick="copyAddress()">COPY</button>
-    </div>
-
-    <p class="amount-note">
-      Send exactly <b id="bch-amount">~0.00XX BCH</b> (≈ $1.99 USD at current rate)<br/>
-      <span style="color:var(--dim);font-size:10px">Rate auto-fetches on page load · Wallet will convert USD to BCH</span>
-    </p>
-
-    <!-- QR Code -->
-    <div class="qr-wrapper">
-      <canvas id="qr-canvas" width="180" height="180"></canvas>
-      <span style="font-size:11px;color:var(--dim)">Scan with any BCH wallet</span>
-    </div>
-
-    <div class="step-label">STEP 2 — VERIFY PAYMENT & GET DOWNLOAD</div>
-
-    <button class="check-btn" onclick="checkPayment()" id="check-btn">
-      ⚡ I Paid — Check & Download
-    </button>
-
-    <div class="status-area" id="status-area">
-      <div class="spinner" id="status-spinner"></div>
-      <span id="status-text">Checking blockchain...</span>
-    </div>
-
-    <!-- Download section — revealed after payment confirmed -->
-    <div id="download-section">
-      <span class="dl-check">✅</span>
-      <div class="dl-title">Payment Confirmed!</div>
-      <p class="dl-sub">Thank you. Your download is ready below.</p>
-      <a href="lightning_vs_bch_book_v2.pdf" download class="dl-btn">
+      <a href="lightning_vs_bch_book_v2.pdf" download class="dl-btn"
+         style="display:block;text-align:center;padding:18px;background:linear-gradient(135deg,var(--teal),var(--teal-dim));color:var(--void);font-family:var(--font-head);font-weight:800;font-size:17px;border-radius:12px;text-decoration:none;transition:all .2s;letter-spacing:.02em"
+         onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='0 10px 30px rgba(10,193,142,.35)'"
+         onmouseout="this.style.transform='';this.style.boxShadow=''">
         ⬇ Download The Scaling Illusion (PDF)
       </a>
-      <p style="margin-top:14px;font-size:11px;color:var(--dim)">
-        If the download doesn't start, right-click and "Save link as…"
-      </p>
-    </div>
 
-    <div style="margin-top:20px;padding-top:16px;border-top:1px solid var(--border)">
-      <div style="font-size:11px;color:var(--dim);display:flex;gap:20px;justify-content:center;flex-wrap:wrap">
-        <span>🔒 No account required</span>
-        <span>🌍 Works worldwide</span>
-        <span>⚡ Peer-to-peer</span>
-        <span>📄 PDF format</span>
+      <p style="margin-top:12px;text-align:center;font-size:11px;color:var(--dim)">
+        If download doesn't start, right-click → "Save link as…"
+      </p>
+
+      <div style="margin-top:20px;padding-top:16px;border-top:1px solid var(--border)">
+        <div style="font-size:11px;color:var(--dim);display:flex;gap:20px;justify-content:center;flex-wrap:wrap">
+          <span>📄 10 Chapters</span>
+          <span>🔒 No tracking</span>
+          <span>🌍 Share freely</span>
+          <span>⚡ Instant</span>
+        </div>
       </div>
     </div>
+
+    <!-- Donation Card -->
+    <div class="buy-card" style="border-color:rgba(247,147,26,.25)">
+      <div style="text-align:center;margin-bottom:6px">
+        <span style="font-size:11px;letter-spacing:.12em;color:var(--gold);font-weight:700">ENJOYED THE BOOK?</span>
+      </div>
+      <div style="font-family:var(--font-head);font-size:22px;font-weight:800;color:var(--white);text-align:center;margin-bottom:6px">
+        Support with a BCH Donation
+      </div>
+      <p style="font-size:12px;color:var(--muted);text-align:center;margin-bottom:24px;line-height:1.7">
+        This research is free for everyone. If it helped you understand the truth about
+        Lightning Network and Bitcoin Cash, consider sending any amount — even $0.10 proves
+        BCH works better than LN ever could.
+      </p>
+
+      <!-- Suggested amounts -->
+      <div style="display:flex;gap:10px;justify-content:center;margin-bottom:20px;flex-wrap:wrap">
+        <button onclick="setSuggest('0.001')" class="suggest-btn">☕ $0.50</button>
+        <button onclick="setSuggest('0.005')" class="suggest-btn">🍕 $2</button>
+        <button onclick="setSuggest('0.01')"  class="suggest-btn">⭐ $5</button>
+        <button onclick="setSuggest('0.05')"  class="suggest-btn">🚀 $20</button>
+      </div>
+
+      <div class="step-label">DONATION ADDRESS (BCH)</div>
+      <div class="address-box">
+        <span class="address-text" id="bch-address">bitcoincash:qz02xkcr6mdezq9f9p5x4rq7p6m2lzktevxsyc4gn5</span>
+        <button class="copy-btn" onclick="copyAddress()">COPY</button>
+      </div>
+
+      <p style="text-align:center;font-size:11px;color:var(--dim);margin:10px 0 18px">
+        Any amount welcome · Transaction fee &lt;$0.001 · No middlemen
+      </p>
+
+      <!-- QR Code -->
+      <div class="qr-wrapper">
+        <canvas id="qr-canvas" width="180" height="180"></canvas>
+        <span style="font-size:11px;color:var(--dim)">Scan with any BCH wallet</span>
+      </div>
+
+      <div style="margin-top:16px;padding:14px;background:var(--panel);border-radius:10px;border:1px solid var(--border);text-align:center">
+        <span style="font-size:11px;color:var(--muted)">
+          ₿ Every donation funds more free research like this.<br/>
+          <span style="color:var(--gold)">Spread the word — share this page with anyone curious about BCH.</span>
+        </span>
+      </div>
+    </div>
+
   </div>
 </section>
 
@@ -609,27 +645,27 @@ footer{
 <!-- How it works -->
 <section class="section">
   <p class="section-label">HOW IT WORKS</p>
-  <h2 class="section-title">Buy in 3 simple <span>steps</span></h2>
+  <h2 class="section-title">Free, open & <span>borderless</span></h2>
   <div class="steps-grid">
     <div class="step-card">
       <div class="step-num">01</div>
-      <div class="step-title">Send BCH</div>
-      <div class="step-body">Copy our Bitcoin Cash address or scan the QR code with any BCH wallet (Electron Cash, Muun, etc.) and send the exact amount shown.</div>
+      <div class="step-title">Download Free</div>
+      <div class="step-body">Click the download button — no account, no email, no paywall. The full 10-chapter research book is yours instantly.</div>
     </div>
     <div class="step-card">
       <div class="step-num">02</div>
-      <div class="step-title">Click Verify</div>
-      <div class="step-body">After sending, hit "I Paid — Check & Download." We query the BCH blockchain in real time to confirm your transaction was received.</div>
+      <div class="step-title">Read & Learn</div>
+      <div class="step-body">Dig into developer testimonies, documented attack vectors, and hard data comparing Lightning Network vs Bitcoin Cash.</div>
     </div>
     <div class="step-card">
       <div class="step-num">03</div>
-      <div class="step-title">Download Instantly</div>
-      <div class="step-body">Once payment is confirmed, a download link appears immediately. No email. No account. No waiting. Just pure peer-to-peer commerce.</div>
+      <div class="step-title">Share It</div>
+      <div class="step-body">Found it useful? Share this page or the PDF with anyone curious about Bitcoin scaling. Knowledge spreads best when it's free.</div>
     </div>
     <div class="step-card">
-      <div class="step-num">~</div>
-      <div class="step-title">Fees under $0.001</div>
-      <div class="step-body">Your BCH transaction fee to send this payment is a fraction of a cent — proving exactly what this book is about: BCH scales, LN doesn't.</div>
+      <div class="step-num">♥</div>
+      <div class="step-title">Donate in BCH</div>
+      <div class="step-body">If you found value, send any BCH donation — even $0.10. Transaction fee is under $0.001, proving exactly what this book argues.</div>
     </div>
   </div>
 </section>
@@ -753,73 +789,31 @@ footer{
 
 <!-- ── Scripts ─────────────────────────────────────────────────── -->
 <script>
-// ── CONFIG — EDIT THESE ─────────────────────────────────
 const BCH_ADDRESS = "bitcoincash:qz02xkcr6mdezq9f9p5x4rq7p6m2lzktevxsyc4gn5";
-const BCH_ADDRESS_PLAIN = "qz02xkcr6mdezq9f9p5x4rq7p6m2lzktevxsyc4gn5"; // without prefix
-const PRICE_USD   = 1.99;
-const PDF_FILENAME = "lightning_vs_bch_book_v2.pdf";
-// ────────────────────────────────────────────────────────
 
 // ── QR Code ──────────────────────────────────────────────
-async function renderQR() {
+function renderQR(amount) {
   const canvas = document.getElementById('qr-canvas');
   const ctx = canvas.getContext('2d');
-  const uri = encodeURIComponent(`${BCH_ADDRESS}?amount=${getBCHAmount()}`);
+  const data = amount
+    ? `${BCH_ADDRESS}?amount=${amount}`
+    : BCH_ADDRESS;
+  const uri = encodeURIComponent(data);
   const img = new Image();
   img.crossOrigin = "anonymous";
   img.onload = () => { ctx.clearRect(0,0,180,180); ctx.drawImage(img,0,0,180,180); };
-  img.onerror = () => {
-    ctx.fillStyle = '#fff'; ctx.fillRect(0,0,180,180);
-    ctx.fillStyle = '#333'; ctx.font = '9px monospace';
-    ctx.fillText('BCH Address QR', 20, 90);
-  };
   img.src = `https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${uri}`;
 }
 
-function wrapText(ctx, text, x, y, maxW, lineH) {
-  let line = '';
-  for (let ch of text.split('')) {
-    const test = line + ch;
-    if (ctx.measureText(test).width > maxW && line) { ctx.fillText(line,x,y); y+=lineH; line=ch; }
-    else { line=test; }
-  }
-  ctx.fillText(line, x, y);
+// ── Suggested donation amounts ───────────────────────────
+function setSuggest(bchAmt) {
+  // Highlight active button
+  document.querySelectorAll('.suggest-btn').forEach(b => b.classList.remove('active'));
+  event.target.classList.add('active');
+  renderQR(bchAmt);
 }
 
-// ── BCH price fetch ──────────────────────────────────────
-let bchAmount = null;
-function getBCHAmount() { return bchAmount || 0.01; }
-
-async function fetchBCHPrice() {
-  try {
-    // Try CoinGecko first, fallback to CryptoCompare
-    let price = null;
-    try {
-      const r = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin-cash&vs_currencies=usd');
-      const d = await r.json();
-      price = d['bitcoin-cash']['usd'];
-    } catch(e) {
-      const r2 = await fetch('https://min-api.cryptocompare.com/data/price?fsym=BCH&tsyms=USD');
-      const d2 = await r2.json();
-      price = d2['USD'];
-    }
-    bchAmount = (PRICE_USD / price).toFixed(6);
-    document.getElementById('bch-amount').textContent = `~${bchAmount} BCH`;
-    // Also update the inline amount note
-    const noteEl = document.getElementById('amount-usd-note');
-    if (noteEl) noteEl.textContent = `≈ $${PRICE_USD} USD at current rate`;
-    renderQR();
-  } catch(e) {
-    bchAmount = "0.01";
-    document.getElementById('bch-amount').textContent = '~0.01 BCH (approx. $4.99 USD)';
-    renderQR();
-  }
-}
-
-// ── Address display ──────────────────────────────────────
-document.getElementById('bch-address').textContent = BCH_ADDRESS;
-
-// ── Copy button ──────────────────────────────────────────
+// ── Copy address ─────────────────────────────────────────
 function copyAddress() {
   navigator.clipboard.writeText(BCH_ADDRESS).then(() => {
     const btn = document.querySelector('.copy-btn');
@@ -829,184 +823,8 @@ function copyAddress() {
   });
 }
 
-// ── Payment check ─────────────────────────────────────────
-// Uses confirmed CORS-open APIs only. All tested for browser access.
-let checkAttempts = 0;
-
-async function checkPayment() {
-  const btn = document.getElementById('check-btn');
-  const statusArea = document.getElementById('status-area');
-  const statusText = document.getElementById('status-text');
-
-  btn.disabled = true;
-  btn.textContent = 'Checking...';
-  statusArea.className = 'status-area checking';
-  statusText.textContent = 'Querying the Bitcoin Cash blockchain...';
-
-  // Three independent CORS-open APIs tried in sequence.
-  // If the first succeeds (payment found OR not found), we stop.
-  // If it throws a network/CORS error we try the next one.
-  const apis = [
-    checkViaCoinbase,      // 1. Coinbase/blockstream proxy — reliable CORS
-    checkViaBlockonomics,  // 2. blockonomics.co — CORS open, no key needed
-    checkViaFullstack,     // 3. api.fullstack.cash — open CORS BCH explorer
-  ];
-
-  let lastError = 'All blockchain APIs failed to respond.';
-
-  for (const apiFn of apis) {
-    try {
-      const result = await apiFn();
-      if (result.found) {
-        statusArea.className = 'status-area success';
-        statusText.textContent = `✅ Payment confirmed! TX: ${result.txid ? result.txid.slice(0,22)+'…' : 'verified'}`;
-        revealDownload();
-        return;
-      } else {
-        // API responded but no matching payment yet
-        checkAttempts++;
-        statusArea.className = 'status-area error';
-        statusText.textContent = checkAttempts < 4
-          ? `Payment not detected yet. Wait 30–60 sec after sending and try again. (Attempt ${checkAttempts})`
-          : `Still not found. Confirm you sent to the exact address shown and try once more.`;
-        btn.disabled = false;
-        btn.textContent = '⚡ I Paid — Check & Download';
-        return;
-      }
-    } catch (e) {
-      lastError = e.message;
-      // Network/CORS error — try next API
-    }
-  }
-
-  // All APIs failed (true network error or all CORS-blocked)
-  checkAttempts++;
-  statusArea.className = 'status-area error';
-  statusText.textContent = `Could not reach blockchain APIs (${lastError}). Check your internet and try again. (Attempt ${checkAttempts})`;
-  btn.disabled = false;
-  btn.textContent = '⚡ I Paid — Check & Download';
-}
-
-// ─────────────────────────────────────────────────────────
-// API 1 — electroncash.de public Fulcrum REST
-// Endpoint: https://electroncash.de/bch/address/<addr>/utxo
-// Returns JSON array of UTXOs — CORS open, no key needed
-// ─────────────────────────────────────────────────────────
-async function checkViaCoinbase() {
-  const url = `https://electroncash.de/bch/address/${BCH_ADDRESS_PLAIN}/utxo`;
-  const r = await fetch(url, { mode: 'cors' });
-  if (!r.ok) throw new Error(`electroncash.de ${r.status}`);
-  const utxos = await r.json();
-
-  // Also fetch recent TXs
-  const txUrl = `https://electroncash.de/bch/address/${BCH_ADDRESS_PLAIN}/tx`;
-  const txR = await fetch(txUrl, { mode: 'cors' });
-  if (!txR.ok) throw new Error(`electroncash.de tx ${txR.status}`);
-  const txList = await txR.json();
-
-  if (!txList || txList.length === 0) return { found: false };
-
-  // Check most recent TX outputs for our address + expected amount
-  const recentTx = txList[0];
-  const txid = recentTx.tx_hash || recentTx.txid || '';
-  const expectedSats = Math.round(parseFloat(getBCHAmount()) * 1e8);
-  const tolerance = Math.max(expectedSats * 0.08, 5000);
-
-  // Check UTXOs for a match (simpler than parsing full TX)
-  for (const utxo of utxos) {
-    const diff = Math.abs((utxo.value || 0) - expectedSats);
-    if (diff <= tolerance) return { found: true, txid: utxo.tx_hash || txid };
-  }
-
-  return { found: false };
-}
-
-// ─────────────────────────────────────────────────────────
-// API 2 — blockonomics.co
-// GET https://www.blockonomics.co/api/bch/addr_tx?addr=<plain>
-// CORS open for BCH, no API key for read-only
-// ─────────────────────────────────────────────────────────
-async function checkViaBlockonomics() {
-  const url = `https://www.blockonomics.co/api/bch/addr_tx?addr=${BCH_ADDRESS_PLAIN}`;
-  const r = await fetch(url, { mode: 'cors' });
-  if (!r.ok) throw new Error(`blockonomics ${r.status}`);
-  const data = await r.json();
-
-  const txs = data.response || [];
-  if (txs.length === 0) return { found: false };
-
-  const expectedSats = Math.round(parseFloat(getBCHAmount()) * 1e8);
-  const tolerance = Math.max(expectedSats * 0.08, 5000);
-
-  // Each item has a `value` field in satoshis received by our address
-  for (const tx of txs) {
-    const val = tx.value || 0;
-    if (val > 0 && Math.abs(val - expectedSats) <= tolerance) {
-      return { found: true, txid: tx.txid || '' };
-    }
-  }
-
-  return { found: false };
-}
-
-// ─────────────────────────────────────────────────────────
-// API 3 — api.fullstack.cash (BCHJS REST, CORS open)
-// GET https://api.fullstack.cash/v5/address/details/<addr>
-// ─────────────────────────────────────────────────────────
-async function checkViaFullstack() {
-  const url = `https://api.fullstack.cash/v5/address/details/${BCH_ADDRESS_PLAIN}`;
-  const r = await fetch(url, {
-    mode: 'cors',
-    headers: { 'Content-Type': 'application/json' }
-  });
-  if (!r.ok) throw new Error(`fullstack.cash ${r.status}`);
-  const data = await r.json();
-
-  // data.txids — array of TX hashes for this address
-  const txids = data.txids || [];
-  if (txids.length === 0) return { found: false };
-
-  // Get full TX to inspect outputs
-  const txUrl = `https://api.fullstack.cash/v5/transaction/details/${txids[0]}`;
-  const txR = await fetch(txUrl, { mode: 'cors' });
-  if (!txR.ok) throw new Error(`fullstack.cash tx ${txR.status}`);
-  const tx = await txR.json();
-
-  const expectedBCH = parseFloat(getBCHAmount());
-  const tolerance = expectedBCH * 0.08;
-
-  for (const out of (tx.vout || [])) {
-    const addrs = out.scriptPubKey?.addresses || [];
-    const val = parseFloat(out.value || 0);
-    const matchAddr = addrs.some(a =>
-      a === BCH_ADDRESS_PLAIN ||
-      a === BCH_ADDRESS ||
-      a.replace('bitcoincash:', '') === BCH_ADDRESS_PLAIN
-    );
-    if (matchAddr && Math.abs(val - expectedBCH) <= tolerance) {
-      return { found: true, txid: txids[0] };
-    }
-  }
-
-  return { found: false };
-}
-
-function revealDownload() {
-  document.getElementById('check-btn').style.display = 'none';
-  document.getElementById('download-section').classList.add('active');
-  document.getElementById('download-section').scrollIntoView({behavior:'smooth',block:'center'});
-
-  // Store in sessionStorage so refresh doesn't lose download
-  sessionStorage.setItem('paid', '1');
-}
-
-// ── Check if already paid this session ──────────────────
-if (sessionStorage.getItem('paid') === '1') {
-  revealDownload();
-}
-
 // ── Init ─────────────────────────────────────────────────
-fetchBCHPrice();
+renderQR();
 </script>
 
 </body>
